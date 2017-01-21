@@ -2,5 +2,5 @@
 
 Developed by: <br>
 Ivaylo Hristov <br>
-Hiddie Wieringa <br>
+Hidde Wieringa <br>
 Sebastian Panman de Wit<br>
