@@ -26,3 +26,7 @@ Visualization of the output:
 - `plotting/histogram_plot.py` can be used to plot Spark output as a histogram.
 - `plotting/threshold_plotting.py` can be used to plot a summary of the Volkskrant output to determine the threshold.
 - `plotting/threshold_twitter.py` can be used to plot a summary of the Twitter output to determine the threshold.
+
+## Report
+
+In the folder `Report` the report including the figures can be found. It can be compiled using `pdflatex`.
