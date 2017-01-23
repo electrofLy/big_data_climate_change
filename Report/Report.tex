@@ -130,14 +130,14 @@ A brief description of all materials and methods used in this research will be g
 
 Three datasets have been used for this research, namely news articles of the Volkskrant, tweets from Twitter and a list of climate related keywords.
 
-For the news items, articles from the Dutch website of Volkskrant have been taken. The news articles in our dataset have been published between 2010 up to and including 2016 (a total of 491,852 articles; size on disk 9.7GB compressed, 29.1GB uncompressed). The articles are in split into multiple JSON files with information of the title, publishing timestamp, category, and content. The length of the content (title and text) of the news articles ranges from 0 characters to 87,328 characters. Because the range of the length of the content of the articles is so large, the statistics we deduce later are all per 1000 words of content. 
+For the news items, articles from the Dutch website of Volkskrant have been taken. The news articles in our dataset have been published between 2010 up to and including 2016 (a total of 491,852 articles; size on disk 9.7GB compressed, 29.1GB uncompressed). The articles are split into multiple JSON files with information of the title, publishing timestamp, category, and content. The length of the content (title and text) of the news articles ranges from 0 characters to 87,328 characters. Because the range of the length of the content of the articles is so large, the statistics we deduce later are all per 1000 words of content. 
 
 
-The second dataset is Dutch Twitter data, which has been selected, and preprocessed by Tjong Kim Sang et al [7]. The data ranges from 1 January 2011 up to and including 31 December 2011, a total number of 4,308,911,953 tweets, taking 1.6 TB on disk compressed and 4.9 TB uncompressed. The dataset includes a large number of metadata fields which are not used: only the text content and the timestamp of publishing of the tweet are used. Data extraction of the tweets was however not trivial because the structure of the dataset is not the same throughout the dataset. This meant that while the data could not be viewed manually (it is terabytes large), the structure had to be determined programmatically. This meant that the timestamp field `timestamp\_ms’ could sometimes not be used (it was absent), so the field `created\_at’ must be used. That field contained a textual representation of the timestamp, which must be parsed again to useful information. However, there was also a time zone present (always `+0000’), of which there is no support in Python 2.7 without extensions. After removing the time zone information, the timestamp could be parsed and the time information was almost complete. There still remained some tweets with had neither a `timestamp\_ms’ nor a `created\_at’ field. These tweets usually also had no content so they have been discarded due to invalidity. 
+The second dataset is Dutch Twitter data, which has been selected, and preprocessed by Tjong Kim Sang et al [7]. The data ranges from 1 January 2011 up to and including 31 December 2011, a total number of 4,308,911,953 tweets, taking 1.6 TB on disk compressed and 4.9 TB uncompressed. The dataset includes a large number of metadata fields which are not used: only the text content and the timestamp of publishing of the tweet are used. Data extraction of the tweets was however not trivial because the structure of the dataset is not the same throughout the dataset. This meant that while the data could not be viewed manually (it is terabytes large), the structure had to be determined programmatically. Also sometimes timestamp field `timestamp\_ms’ could not be used (it was absent) so the field `created\_at’ must be used. That field contained a textual representation of the timestamp which must be parsed again to useful information. However, there was also a time zone present (always `+0000’) of which there is no support in Python 2.7 without extensions. After removing the time zone information, the timestamp could be parsed and the time information was almost complete. There still remained some tweets witch had neither a `timestamp\_ms’ nor a `created\_at’ field. These tweets usually also had no content so they have been discarded due to invalidity. 
 
 The overlapping time period of the two datasets is 16-01-2011 until and including 30-11-2015. This includes 391,249 news articles and 4,241,945,655 tweets.
 
-Lastly we used a list of keywords related to climate which we found on the internet\footnote{Source: \url{https://sustainability.unc.edu/files/2015/12/Sustainability-Keywords.pdf}}. This list was not optimal for our use because it was written in English so some edits had to be made to be able to use it for classification of the Dutch text in our datasets. First of all the list has been translated into Dutch electronically and afterwards corrected manually where needed. Some other adjustments had to be made, which included removing stopwords, removing ambiguous words, and adding the plural/singular form of keywords. Fortunately a lot of terms which consisted of multiple words in English usually became a single word in Dutch, which simplified matching the terms during the classification process. 
+Lastly we used a list of keywords related to climate which we found on the internet\footnote{Source: \url{https://sustainability.unc.edu/files/2015/12/Sustainability-Keywords.pdf}}. This list was not optimal for our use because it was written in English so some edits had to be made to be able to use it for classification of the Dutch text in our datasets. First of all the list has been translated into Dutch electronically and afterwards corrected manually where needed. Some other adjustments had to be made which included removing stopwords, removing ambiguous words, and adding the plural/singular form of keywords. Fortunately a lot of terms which consisted of multiple words in English usually became a single word in Dutch, which simplified matching the terms during the classification process. 
 
 For the full list of terms, both the English and Dutch version, see the appendix.
 
@@ -154,10 +154,7 @@ The content of news articles and tweets needs to be classified as either related
 
 The thresholds are different for the articles and the tweets since these differ in amount of characters of content. 
 
-For each tweet and article, we count the number of occurrences of a keyword (related to climate) in the title and text. If the count is above the threshold, then the news article or tweet is `climate related’. To determine this threshold, we analysed the frequency distribution of the amount of keywords in the news articles and tweets, and selected the threshold for each data source such that around 5\% qualifies as `climate related’ [\textbf{NEED IMPROVEMENT FOR 5\%} ].
-Volkskrant 3.6\% (>= 5 matches / 1000 words)
-Twitter 0.02\% (>= 3 matches)
-% TODO! 
+For each tweet and article, we count the number of occurrences of a keyword (related to climate) in the title and text. If the count is above the threshold, then the news article or tweet is `climate related’. To determine this threshold, we analysed the frequency distribution of the amount of keywords in the news articles and tweets, and selected the threshold for each data source such that around less than 5\% qualifies as `climate related’, and there are enough articles/tweets in the remaining dataset. We chose the threshold for the Volkskrant articles at 5 per 1000 words which resulted in 3.6\% of the articles being rated as `climate related'. For Twitter we required 3 or more keyword matches to classify the tweet as `climate related, which resulted in 0.02\% of all tweets.
 
 Initially, we defined a title factor for the news articles. We expected that terms occurring in the title of a news article have more impact for raising climate awareness. The matches of any terms in the title of a news article are thus multiplied with a factor. Unfortunately, due to time constraint, we did not use this.
 
@@ -173,12 +170,12 @@ Initially, we defined a title factor for the news articles. We expected that ter
 
 \subsection{Technology}\label{sec:technology}
 
-To store the data, a server cluster has been used with a Hadoop File System (HDFS) to manage the storing, replication, and retrieval of data. On top of the HDFS we can process the data by using Spark (specifically PySpark). The extended functionality SparkSQL has been used which allows easier reading of data in JSON format, and the use of SQL statements to manipulate data. 
+To store the data, a server cluster has been used with a Hadoop File System (HDFS) to manage the storing, replication, and retrieval of data. On top of the HDFS we can process the data using Spark (specifically PySpark). The extended functionality SparkSQL has been used which allows easier reading of data in JSON format, and the use of SQL statements to manipulate data. 
 To process a Python 2.7 script on the server cluster, Yarn is used to manage the cluster, to copy and execute the Python code on the nodes, and to retrieve the results. 
 
 To represent the data visually we have plotted the extracted data from the cluster using the matplotlib package for Python. A problem arising was that the data was not JSON formatted but there were only tuples (a type of Python object).  This meant that we had to parse the output files.
 
-After the data from the output file has been parsed we formatted and filtered it the way we required. Using this, we have created plots of the data to visualize it, using the library matplotlib. Also various statistics have been added such as the average, the standard deviation, the correlation coefficient (when two datasets are plotted). We did not have to implement the different formulas to calculate the statistics by hand, but could calculate them with help of the numerical scientific python package NumPy. With these statistics we were able to examine the data with different thresholds and search for peaks of news/tweets that are relevant to our research.
+After the data from the output file had been parsed we formatted and filtered it the way we required. Using this, we have created plots of the data to visualize it, using the library matplotlib. Also various statistics have been added such as the average, the standard deviation, the correlation coefficient (when two datasets are plotted). We did not have to implement the different formulas to calculate the statistics by hand, but could calculate them with help of the numerical scientific python package NumPy. With these statistics we were able to examine the data with different thresholds and search for peaks of news/tweets that are relevant to our research.
 
 To verify the data and the visualisation of it with Python, we used Excel. The dataset in Excel was put into a large Pivot Table. Using this feature of Excel allowed us to plot the same figures as in Python and then to check whether these were similar. Also the numbers could be verified using this feature. 
 Another benefit of using Pivot Tables in Excel was that it allowed us to quickly manipulate the data by filtering, summing, grouping and filtering the data any required way. This made looking at the impact of different adjustments to the dataset easier than it would have been in NumPy. These different adjustments were for example adjusting thresholds and time periods. From this we decided the different thresholds based on our requirements on the number of articles and tweets, and then used Python to plot figures in more detail. Also the statistical analysis in Python has been verified using the statistical analysis tool in Excel.
@@ -203,7 +200,7 @@ This verification was executed twice for each dataset. First the peaks were anal
 
 \subsection{Statistics}
 
-The total counts of the number of tweets and news articles qualified as `climate related’ (which means the number of matches to terms is above the chosen threshold) have been grouped per day over the time period where data exists for both datasets. These two time series have been correlated to find a correlation factor: first for all the data to get a baseline correlation, and then for only the climate-related articles to see improvement. The numeric calculations are done by the Python package NumPy.
+The total counts of the number of tweets and news articles qualified as `climate related’ (which means the number of matches to terms is above the chosen threshold) have been grouped per day over the time period where data exists for both datasets. These two time series have been correlated to find a correlation factor: first for all the data to get a baseline correlation, and then for only the climate-related articles and tweets to see improvement. The numeric calculations are done by the Python package NumPy.
 
 We have also grouped the data by week instead of by day, but the standard deviation became so large that no peaks were visible in the resulting visualisation. This approach has been discarded as ineffective.
 
@@ -223,16 +220,16 @@ With these counts we were able to determine a threshold for rating articles and 
 
 We have done the verification of the resulting data after applying our classification. We noticed a number of things which were not correct with the results. This made us conclude the verification of our results failed and so the results are invalid. Below the verification is outlined in more detail.
 
-To start, the top articles and tweets were extracted from the cluster by filtering by the the largest numbers of matches, such that only a few articles or tweets remained. These have been read manually to check the content for climate relatedness. This resulted in 87 articles (more than 50 matches in the article, in total; not per 1000 words) and 14 tweets (more than 7 matches of keywords). Although a few articles and tweets of those selected top ones were climate related, mostly they were weather related. This might be logical, as many climate issues are also related to weather in terms of keywords.
+To start, the top articles and tweets were extracted from the cluster by filtering by the the largest numbers of matches, such that only a few articles or tweets remained. These have been read manually to check the content for climate relatedness. This resulted in 87 articles (more than 50 matches in the article, in total; not per 1000 words) and 14 tweets (more than 7 matches of keywords). Although a few articles and tweets of those selected top ones were climate related, most were weather related. This might be logical, as many climate issues are also related to weather in terms of keywords.
 
-Some successful matches: 
+Some correct matches: 
 \begin{itemize}
 	\item \textsc{Volkskrant} `Opklaringen in de broeikas’ (`Clear skies in the greenhouse’) 21 September 2013.\footnote{\url{http://www.volkskrant.nl/archief/opklaringen-in-de-broeikas~a3513501/}}
 	\item \textsc{Volkskrant} `De dreigende kernramp in Japan vandaag van minuut tot minuut` (`The approaching threatening nuclear disaster in Japan today from minute to minute’) 16 March 2011.\footnote{\url{http://www.volkskrant.nl/buitenland/de-dreigende-kernramp-in-japan-vandaag-van-minuut-tot-minuut~a1860793/}}
 	\item \textsc{Twitter} `@Maarijex  ena natuurlijk mooi weer zon zon zon zon zon zon ;k;k;k`
 \end{itemize}
 
-Some failed matches:
+Some incorrect matches:
 \begin{itemize}
 	\item \textsc{Volkskrant} `De volledige tekst van de Troonrede’ (`the complete Troonrede text’) 18 September 2012.\footnote{\url{http://www.volkskrant.nl/politiek/de-volledige-tekst-van-de-troonrede~a3318354}}
 	\item \textsc{Volkskrant} `Dankuwel, crisis’ (`Thank you Crisis’) 11 June 2013.\footnote{\url{http://www.volkskrant.nl/archief/dankuwel-crisis~a3456355/}}
@@ -273,44 +270,21 @@ Next, the peaks of the data filtered with the thresholds have been verified. The
 	\end{tabular}}
 	\captionof{figure}{The peaks of the number of tweets per day which have a number of keyword matches above the threshold.}\label{fig:10}
 \end{Figure}
-
-
-
-
-	
-%Some successful matches:
-%\begin{itemize}
-%	\item Volkskrant `Opklaringen in de broeikas’ (`Clear skies in the greenhouse’) (21 September 2013, http://www.volkskrant.nl/archief/opklaringen-in-de-broeikas~a3513501/)
-%	
-%	\item Volkskrant `De dreigende kernramp in Japan vandaag van minuut tot minuut` (`The approaching threatening nuclear disaster in Japan today from minute to minute’) (16 March 2011, http://www.volkskrant.nl/buitenland/de-dreigende-kernramp-in-japan-vandaag-van-minuut-tot-minuut~a1860793/)
-%	
-%	\item Twitter `@Maarijex  ena natuurlijk mooi weer zon zon zon zon zon zon ;k;k;k`
-%\end{itemize}
-%
-% Some failed matches:
-% \begin{itemize}
-% 	\item Volkskrant `De volledige tekst van de Troonrede’ (`the complete Troonrede text’) (18 September 2012, http://www.volkskrant.nl/politiek/de-volledige-tekst-van-de-troonrede~a3318354)
-% 	
-% 	\item Volkskrant `Dankuwel, crisis’ (`Thank you Crisis’) (11 June 2013, http://www.volkskrant.nl/archief/dankuwel-crisis~a3456355/)
-% 	
-% 	\item Twitter `Denken denken denken en denken denken denken denken denken en oja ook nog denken denken. Maar toch ook wel klein beetje denken hoor.’
-% 	
-% \end{itemize}
  
-Matching of the top dates with any large climate-related event article on the NOS news website has been performed. This was not successful for both the tweets and the news articles (they had different relative peaks). This means the classification of the data was not correct.
+Matching of the top dates with any large climate-related event article on the NOS news website has been performed. This was not successful for both the tweets and the news articles (they had different relative peaks). This meant the classification of the data was not correct.
 
-Finally, to make the verification complete, the reverse has also been done. There are five UN Climate change Conferences, namely on 28 November 2011, 26 November 2012, 11 November 2013, 1 December 2014 and 30 November 2015\footnote{\url{https://en.wikipedia.org/wiki/United\_Nations\_Climate\_Change\_conference}}. None of these events corresponded with any peaks in the plots of the number of matches over time, while there should be an yearly peak or at least an increase of climate-related activity, on Twitter and in the Volkskrant articles.
+Finally, to make the verification complete, the reverse has also been done. We used five UN Climate change Conferences as reference dates, namely those on 28 November 2011, 26 November 2012, 11 November 2013, 1 December 2014 and 30 November 2015\footnote{\url{https://en.wikipedia.org/wiki/United\_Nations\_Climate\_Change\_conference}}. None of these events corresponded with any peaks in the plots of the number of matches over time, while there should be an yearly peak or at least an increase of climate-related activity, on Twitter and in the Volkskrant articles.
 
-We can only conclude that  the verification mostly failed, and thus our results are invalid. This influences the results of the next section. 
+We can only conclude that  the verification mostly failed, and thus any conclusion based on it would be irrelevant.
 
 
 \subsection{Statistics}
 
-Even though the classification failed, we calculated the general correlation coefficients to see if any clue could be found on how to improve the classification. Using NumPy, the correlation has first been calculated between the two whole datasets over the overlapping period of time. This gave us a value of 0.64. 
+Even though the classification failed, we calculated the general correlation coefficients to see if any clue could be found on how to improve the classification. Using NumPy, the correlation coefficient has first been calculated between the two whole datasets over the overlapping period of time. This gave us a value of 0.64. 
 
 Next, the same has been done for the two datasets with a threshold. The correlation coefficient  became 0.34, which is lower. This also implied that the results are not valid, because for a positive relation the correlation should have increased for the filtered datasets. Note that the correlation is still not near 0.0. We imagine this must be because of the general correlation of the underlying data, such that a partial correlation still exists for the filtered data.
 
-Because the data we perform the statistics on these numbers are mostly irrelevant. The classification needs to improve first, as a requirement to perform valid and usable statistics. 
+Because of the incorrect data, the statistical analysis and the resulting numbers are mostly irrelevant. The classification needs to improve first, as a requirement to perform valid and usable statistics. 
 
 \section{Conclusion}\label{sec:conclusion}
 
@@ -323,9 +297,7 @@ First of all, our method used to classify a tweet or article as climate related 
 
 Also the list of keywords related to climate are not optimal. After translation, we tried to remove the ambiguous Dutch words manually and included the plural/singular version of the words. However better language analysis might improve this list of keywords or the process of matching the keywords to a piece of text, for example by adding weights to certain climate related terms. Other examples to improve the classification process are using results from existing research on Natural Language Processing (e.g. stemming), or using a neural network trained by humans to classify the data. 
 
-The previous mentioned limitation also limited us in qualifying a tweet/article as climate related. We tried different thresholds of the minimum amount of keywords in the tweet/article to see if any deviation of count of articles/tweets was showing. 
-
-Furthermore the data used in this research is limited. For climate awareness on social media only Twitter data has been used. Further research could focus on expanding the data to other social media platforms, such as Facebook, Foursquare, Instagram or Pinterest. The same holds for the news coverage which was measured using only the articles of the Volkskrant. To have a better more grounded analysis and conclusion, further research could use more articles from different public media platforms, such as NOS, BCC and newspapers like NRC, Metro, De Telegraaf, Algemeen Dagblad or Trouw. The same analysis we did, might also be done for other countries, with possibly other news and social media sources.
+Furthermore the raw data used in this research is limited. For climate awareness on social media only Twitter data has been used. Further research could focus on expanding the data to other social media platforms, such as Facebook, Foursquare, Instagram or Pinterest. The same holds for the news coverage which was measured using only the articles of the Volkskrant. To have a better more grounded analysis and conclusion, further research could use more articles from different public media platforms, such as NOS, BCC and newspapers like NRC, Metro, De Telegraaf, Algemeen Dagblad or Trouw. The same analysis we did, might also be done for other countries, with possibly other news and social media sources.
 
 Finally, once a suitable classification method has been found and the data is extensive enough to get successful results such as a correlation between the classified tweets and the classified articles, it would be interesting to do research to find a causation instead of a correlation: do published articles raise climate awareness on social media, or is it the other way around?
 
