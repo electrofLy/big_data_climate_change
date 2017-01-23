@@ -90,3 +90,9 @@ ENV/
 
 # JetBrains
 .idea
+
+*converted-to.pdf
+*.pdf
+*.aux
+*.out
+*.synctex.gz
